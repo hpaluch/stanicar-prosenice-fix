@@ -76,7 +76,9 @@ sub fix_missing_vozy_in_gvd {
 	# see https://metacpan.org/pod/distribution/libxml-enno/lib/XML/DOM/Attr.pod
 	my %RequiredVuzIds;
 
-	@Nodes = $Gvd->findnodes( '//razeni/vuz/@typ');
+	# WARNING! $Gvd->findnodes() works wrong way (like $Doc->findnodes())!!!
+	@Nodes = $Doc->findnodes( $GvdXPath.'//razeni/vuz/@typ');
+	print "Found ".(scalar @Nodes)." of $GvdXPath//razeni/vuz/\@typ\n";
 	foreach my $Attr (@Nodes){
 		my $ID = $Attr->getValue;
 		$RequiredVuzIds{$ID} = $Attr;
@@ -85,8 +87,8 @@ sub fix_missing_vozy_in_gvd {
 	}
 
 	my %ProvidedVuzIds;
-	@Nodes = $Gvd->findnodes( '//vozy/vuz/@id');
-	foreach my $Attr (@nodes){
+	@Nodes = $Doc->findnodes( $GvdXPath.'//vozy/vuz/@id');
+	foreach my $Attr (@Nodes){
 		my $ID = $Attr->getValue;
 		$ProvidedVuzIds{$ID} = 1;
 		#print "typ: '$ID'\n";
@@ -117,43 +119,41 @@ sub fix_missing_vozy_in_gvd {
 	}
 
 	print "Changing not existing //vuz/\@typ to replacements...\n";
-	@Nodes = $Doc->findnodes( '//razeni/vuz/@typ');
+	@Nodes = $Doc->findnodes( $GvdXPath.'//razeni/vuz/@typ');
 	foreach my $Attr (@Nodes){
 		my $Name = $Attr->getName;
-		my $id = $Attr->getValue;
-		if (exists $ReplaceIds->{$id}){
-			my $newId = $ReplaceIds->{$id};
-			print "FIXUP: Replacing attr '$name': '$id' -> '$newId'\n";
-			$attr->setValue($newId);
+		my $ID = $Attr->getValue;
+		if (exists $ReplaceIds->{$ID}){
+			my $NewId = $ReplaceIds->{$ID};
+			print "FIXUP: Replacing attr '$Name': '$ID' -> '$NewId'\n";
+			$Attr->setValue($NewId);
 		}
 	}
 
 	print "Adding missing //vozy/vuz from INI file....\n";
-	@nodes = $doc->findnodes( '//vozy');
-	for my $n (@nodes){
-		print dumpNodePath($n)."\n";
+	@Nodes = $Doc->findnodes( $GvdXPath.'//vozy');
+	for my $N (@Nodes){
+		print dumpNodePath($N)."\n";
 	}
 
-	die "Unexpected number of nodes for //vozy ".(scalar @nodes)." <> 1"
-		unless scalar @nodes == 1;
-	my $VozyElement = $nodes[0];
+	die "Unexpected number of nodes for //vozy ".(scalar @Nodes)." <> 1"
+		unless scalar @Nodes == 1;
+	my $VozyElement = $Nodes[0];
 	print "TagName: '".$VozyElement->getTagName."'\n";
 
-	for my $id (sort keys %AddFromIniIds){
-		die "Internal error: id='$id' does not exit in INI file"
-			unless exists $VozyConfig->{$id};
-		my $VuzElement = $doc->createElement('vuz');
-		# copy ini key=value as attributes
-		for my $key ( sort keys %{$VozyConfig->{$id}}){
-			my $val = $VozyConfig->{$id}{$key};
-			print "Adding $key=$val to //vozy/vuz/[\@id='$id']\n";
-			$VuzElement->setAttribute($key,$val);
+	for my $ID (sort keys %AddFromIniIds){
+		die "Internal error: id='$ID' does not exit in INI file"
+			unless exists $VozyConfig->{$ID};
+		my $VuzElement = $Doc->createElement('vuz');
+		# copy ini Key=Val as attributes
+		for my $Key ( sort keys %{$VozyConfig->{$ID}}){
+			my $Val = $VozyConfig->{$ID}{$Key};
+			print "Adding $Key=$Val to //vozy/vuz/[\@id='$ID']\n";
+			$VuzElement->setAttribute($Key,$Val);
 		}
-		$VuzElement->setAttribute('id',$id);
+		$VuzElement->setAttribute('id',$ID);
 		$VozyElement->appendChild($VuzElement);
 	}
-
-
 }
 
 
