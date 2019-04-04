@@ -144,6 +144,8 @@ sub fix_missing_vozy_in_gvd {
 	for my $ID (sort keys %AddFromIniIds){
 		die "Internal error: id='$ID' does not exit in INI file"
 			unless exists $VozyConfig->{$ID};
+		my $NewLine = $Doc->createTextNode("\n    ");
+		$VozyElement->appendChild($NewLine);
 		my $VuzElement = $Doc->createElement('vuz');
 		# copy ini Key=Val as attributes
 		for my $Key ( sort keys %{$VozyConfig->{$ID}}){
@@ -154,6 +156,8 @@ sub fix_missing_vozy_in_gvd {
 		$VuzElement->setAttribute('id',$ID);
 		$VozyElement->appendChild($VuzElement);
 	}
+	my $NewLine = $Doc->createTextNode("\n    ");
+	$VozyElement->appendChild($NewLine);
 }
 
 
