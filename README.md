@@ -5,7 +5,7 @@ Here is simple perl script that fixes `prosenice_1-50.xml` simulation
 as http://2koridor.websnadno.cz/prosenice_1-50.zip
 from [Prosenice simulation page][Prosenice]
 
-_Stanicar _simulation program is available from: http://www.simulator.websnadno.cz/Ke-stazeni.html
+_Stanicar_ simulation program is available from: http://www.simulator.websnadno.cz/Ke-stazeni.html
 
 # perl setup
 
